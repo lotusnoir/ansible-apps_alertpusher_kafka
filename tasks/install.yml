@@ -1,0 +1,65 @@
+---
+- name: "Checking alertpusher_kafka binary exists"
+  stat:
+    path: '{{ alertpusher_kafka_install_dir }}/alertpusher_kafka'
+  register: alertpusher_kafka_binary
+
+- when: not alertpusher_kafka_binary.stat.exists
+  block:
+    - name: "Clone repo alertpusher_kafka"
+      git:
+        repo: '{{ alertpusher_kafka_repo }}'
+        dest: '{{ alertpusher_kafka_src_dir }}'
+        force: true
+      become: false
+      delegate_to: localhost
+      run_once: true
+
+    - name: change domain name
+      replace:
+        path: "{{ alertpusher_kafka_src_dir }}/kafka.go"
+        regexp: '(.*)example\\.net(.*)?$'
+        replace: '\1{{ domain_extension.split(".")[0] }}\.{{ domain_extension.split(".")[1] }}\2'
+      become: false
+      delegate_to: localhost
+      run_once: true
+
+    - name: "Build source"
+      make:
+        chdir: '{{ alertpusher_kafka_src_dir }}'
+      become: false
+      delegate_to: localhost
+      run_once: true
+
+    - name: "Propagate alertpusher_kafka binaries"
+      copy:
+        src: '{{ alertpusher_kafka_src_dir }}/alertpusher-kafka'
+        dest: '{{ alertpusher_kafka_install_dir }}/alertpusher_kafka'
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: "Remove source directory"
+      file:
+        path: '{{ alertpusher_kafka_src_dir }}'
+        state: absent
+      become: false
+      delegate_to: localhost
+      run_once: true
+
+- name: "Copy systemd init file"
+  template:
+    src: 'alertpusher_kafka.service.j2'
+    dest: '/etc/systemd/system/alertpusher-{{ item.name }}.service'
+    mode: '0640'
+  with_items:
+    - "{{ alertpusher_kafka_targets }}"
+
+- name: "Start alertpusher_kafka"
+  service:
+    state: started
+    enabled: true
+    daemon_reload: true
+    name: "alertpusher-{{ item.name }}"
+  with_items:
+    - "{{ alertpusher_kafka_targets }}"

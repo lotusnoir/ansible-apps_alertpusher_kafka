@@ -1,0 +1,29 @@
+[Unit]
+Description= alertpusher_kafka {{ item.name }}
+After=network-online.target
+StartLimitInterval=0
+
+[Service]
+Type=simple
+Environment=http_proxy=
+ExecStart={{ alertpusher_kafka_install_dir }}/alertpusher_kafka \
+{% if item.debug is defined and item.debug is sameas true %}        --debug=1 \
+{% endif %}
+{% if item.skip_resolved is defined and item.skip_resolved is sameas true %}        --skip-resolved \
+{% endif %}
+{% if item.log_dir is defined %}        --log={{ item.log_dir }} \
+{% endif %}
+{% if item.partition is defined %}        --partition={{ item.partition }} \
+{% endif %}
+          --port={{ item.port }} \
+          --kafka-hosts={{ item.host }} \
+          --topic={{ item.topic }}
+
+KillMode=control-group
+KillSignal=TERM
+Restart=always
+RestartSec=3
+MemoryHigh=50M
+
+[Install]
+WantedBy=multi-user.target

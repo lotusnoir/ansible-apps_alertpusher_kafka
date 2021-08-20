@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: "Philippe leal"
+  description: "Install and configure alertpusher_kafka to send prometheurs alertmanager event to kafka topic"
+  role_name: apps_alertpusher_kafka
+  license: "license: Apache License, Version 2.0"
+  min_ansible_version: 2.8
+
+  platforms:
+    - name: "Ubuntu"
+      versions:
+        - all
+    - name: "Debian"
+      versions:
+        - buster
+        - jessie
+
+  galaxy_tags:
+    - alertmanager
+    - kafka
+    - prometheus
+
+dependencies: []

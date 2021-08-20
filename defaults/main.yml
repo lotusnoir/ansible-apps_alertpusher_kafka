@@ -1,0 +1,17 @@
+---
+# Install options
+alertpusher_kafka_repo: "https://github.com/lotusnoir/alertmanager-apps_alertpusher_kafka.git"
+alertpusher_kafka_install_dir: '/usr/local/bin'
+alertpusher_kafka_src_dir: "/tmp/alertpusher_kafka"
+domain_extension: example.net
+
+# Systemd options
+alertpusher_kafka_targets:
+  - name: test1
+    port: 8088
+    host: kafka1.example.net,kafka2.example.net
+    topic: alert_noc
+    partition: 2 # 0 is not set
+    log_dir: /var/log/alertpusher_kafka/ # stderr if not set
+    skip_resolved: true # false when not set
+    debug: true #false when not set
